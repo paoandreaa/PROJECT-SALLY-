@@ -22,9 +22,7 @@ class SallyTeleop(Node):
         self.angle = 90.0
         self.step = 5.0
 
-        self.get_logger().info(
-            "Teleoperation started! Press: A: Left | D: Right | Q: Exit"
-        )
+        self.get_logger().info("Teleoperation started! Press: A: Left | D: Right | Q: Exit")
 
     def read_key(self):
         key = sys.stdin.read(1).lower()
@@ -43,13 +41,11 @@ class SallyTeleop(Node):
         message = Float32()
         message.data = float(self.angle)
         self.angle_publisher.publish(message)
-
-        self.get_logger().info(
-            f"Requested angle: {self.angle} degrees"
-        )
+        
+        # \r asegura que vuelva al inicio de la línea y \n baja al siguiente renglón
+        print(f"\r\n[INFO] [sally_teleop]: Angulo solicitado: {self.angle} grados", end="")
 
         return True
-
 
 def main(args=None):
     rclpy.init(args=args)
