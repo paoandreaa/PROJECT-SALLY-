@@ -3,7 +3,7 @@ cd ~/sally_ws
 # Install Python dependencies outside the system Python directories
 python3 -m pip install \
     --target "$PWD/.sally_deps" \
-    -r src/PROJECT-SALLY-/src/requirements-hardware.txt
+    -r src/requirements-hardware.txt
 
 # Make dependencies visible to the ROS 2 Python interpreter
 export PYTHONPATH="$PWD/.sally_deps${PYTHONPATH:+:$PYTHONPATH}"
