@@ -22,6 +22,12 @@
   <test_depend>ament_lint_common</test_depend>
 
   <!-- Exported targets -->
+  <exec_depend>python3-board</exec_depend>
+  <exec_depend>python3-adafruit-blinka</exec_depend>
+  <exec_depend>python3-adafruit-circuitpython-pca9685</exec_depend>
+
+  
+
   <export>
     <build_type>ament_python</build_type>
   </export>

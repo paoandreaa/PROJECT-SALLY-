@@ -31,6 +31,9 @@ setup(
         'console_scripts': [
             'teleop_sally = sally_teleop.teleop_sally:main',
             'sally_teleop_pca = sally_teleop.sally_teleop_pca:main',
+            'sally_percepcion_automatic = sally_teleop.sally_percepcion_automatic:main',
+            'sally_movement_automatic = sally_teleop.sally_movement_automatic:main',
+
         ],
     },
 )
