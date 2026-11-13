@@ -27,6 +27,9 @@ setup(
     description='SALLY ROS 2 package',
     license='BSD-3-Clause',
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'drive_controller = sally_control.drive_controller:main',
+            'obstacle_avoidance = sally_control.obstacle_avoidance:main',
+        ],
     },
 )
