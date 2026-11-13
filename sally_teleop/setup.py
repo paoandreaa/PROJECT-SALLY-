@@ -15,6 +15,7 @@ setup(
         'setuptools',
         'adafruit-blinka',
         'adafruit-circuitpython-pca9685',
+        'adafruit-circuitpython-motor',
     ],
     zip_safe=True,
     maintainer='paola-andrea-dallos',

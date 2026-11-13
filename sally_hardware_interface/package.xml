@@ -5,7 +5,7 @@
     <!--- Initial package configuration -->
     <name>sally_hardware_interface</name>
     <version>1.0.0</version>
-    <description>Sally hardware interface to handle the connection with the hardware ( motors - servos - sensors ) </description>
+    <description>Sally hardware interface to handle the connection with the hardware ( motors - servos - sensors )</description>
     <maintainer email="paoandreadallos@gmail.com">paola-andrea-dallos</maintainer>
     <license>BSD-3-Clause</license>
 

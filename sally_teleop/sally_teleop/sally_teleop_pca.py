@@ -1,4 +1,4 @@
-#!/home/alabama/pca9685_env/bin/python
+#!/usr/bin/env python3
 
 import rclpy
 from rclpy.node import Node
