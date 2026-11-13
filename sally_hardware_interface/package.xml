@@ -10,7 +10,7 @@
     <license>BSD-3-Clause</license>
 
     <!-- Build tool dependencies for ament package -->
-    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_python</buildtool_depend>
 
     <!-- Test dependencies -->
     <test_depend>ament_cmake_gtest</test_depend>
@@ -19,6 +19,6 @@
 
     <!-- Exported targets -->
     <export>
-        <build_type>ament_cmake</build_type>
+        <build_type>ament_python</build_type>
     </export>
 </package>
