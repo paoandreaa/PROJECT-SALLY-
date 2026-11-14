@@ -1,3 +1,10 @@
+
+# Adafruit hardware libraries
 adafruit-blinka
 adafruit-circuitpython-pca9685
 adafruit-circuitpython-motor
+
+# Raspberry Pi platform dependencies
+gpiod>=2.2.2,<3
+Adafruit-Blinka-Raspberry-Pi-PWM>=1.0.2
+rpi_ws281x>=4.0.0
