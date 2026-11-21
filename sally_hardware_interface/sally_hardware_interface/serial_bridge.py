@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
@@ -17,7 +15,7 @@ class serial_bridge(Node):
     def __init__(self):
         super().__init__("sally_hardware")
 
-        self.get_parameters()
+        # self.get_parameter()
 
         self.rh_ultra_pub = self.create_publisher(
             Float32,
@@ -52,7 +50,7 @@ class serial_bridge(Node):
             "Sally servo driver started!"
         )
 
-    def get_parameters(self):
+        #def get_parameters(self):
         self.declare_parameter('trig_ultra', 11)
         self.declare_parameter('echo_ultra', 8)
         self.declare_parameter('servo_chanel', 2)
@@ -74,6 +72,7 @@ class serial_bridge(Node):
             Parameter('enb', Parameter.Type.INTEGER, 17),
             Parameter('in3', Parameter.Type.INTEGER, 27),
             ])
+    # end def
 
 
     def rh_ultra(self):
