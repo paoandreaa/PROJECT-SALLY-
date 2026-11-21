@@ -17,7 +17,7 @@ class serial_bridge(Node):
     def __init__(self):
         super().__init__("sally_hardware")
 
-        self.get_parameter()
+        self.get_parameter(self)
 
         self.rh_ultra_pub = self.create_publisher(
             Float32,
