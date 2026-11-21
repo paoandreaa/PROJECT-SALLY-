@@ -21,7 +21,7 @@ class SallyTeleop(Node):
             10
         )
 
-        # Ángulos iniciales
+        # Agulos iniciales
         self.angle_1 = 90.0
         self.angle_2 = 90.0
 

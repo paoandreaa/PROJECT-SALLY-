@@ -1,146 +1,192 @@
-#!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
-
-from sally_msgs.msg import SallyServo
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Twist
-
+from rclpy.parameter import Parameter
+from sally_msgs.msg import ServoHead
 import RPi.GPIO as GPIO
-import board
+import time
 
+import board
 import adafruit_pca9685
 import adafruit_motor.servo
 
-
-class SallyPhysicalDriver(Node):
-
+class serial_bridge(Node):
     def __init__(self):
-        super().__init__("sally_physical_driver")
+        super().__init__("sally_hardware")
 
-        # 1. INICIALIZAR LA PCA9685 PARA LOS SERVOS
+        
+        self.declare_parameter('trig_ultra', 11)
+        self.declare_parameter('echo_ultra', 8)
+        self.declare_parameter('servo_chanel', 2)
+        self.declare_parameter('in1', 26)
+        self.declare_parameter('ena', 4)
+        self.declare_parameter('in2', 21)
+        self.declare_parameter('in4', 18)
+        self.declare_parameter('enb', 17)
+        self.declare_parameter('in3', 27)
+
+        # self.get_parameter()
+
+        self.rh_ultra_pub = self.create_publisher(
+            Float32,
+            '/sally/rh_dist',
+            10
+        )
+
+        # INICIO LA PCA
         i2c = board.I2C()
-        self.pca = adafruit_pca9685.PCA9685(i2c)
+        self.pca =  adafruit_pca9685.PCA9685(i2c)
         self.pca.frequency = 50
 
-        # CONECTAR SERVOS A LOS CANALES 2 Y 3
-        self.servo_1 = adafruit_motor.servo.Servo(self.pca.channels[2])
-        self.servo_2 = adafruit_motor.servo.Servo(self.pca.channels[3])
+        # CONECTO EL SERVO AL CANAL
+        self.servo = adafruit_motor.servo.Servo(self.pca.channels[2])
 
-        # 2. DEFINIR LOS PINES GPIO DEL MOTOR (BCM)
         self.motor_en = 4
         self.motor_in1 = 26
-        self.motor_in2 = 21
+        self.motor_in2 = 21 
 
-        # CONFIGURACIÓN FÍSICA DE LOS MOTORES
-        self.setup_motors()
 
-        # VELOCIDAD MÁXIMA Y LÍMITE PWM
-        self.max_linear_speed = 0.2
-        self.max_duty_cycle = 40.0
-
-        # 3. SUSCRIPCIONES EN ROS 2
-        # Suscripción para los movimientos de la cabeza
+        # SE SUSCRIBE AL TOPIC
         self.servo_subscription = self.create_subscription(
-            SallyServo,
+            ServoHead,
             "/sally/servo_command",
-            self.angle_callback,
+            self.angle_callback(),
             10
         )
 
-        # Suscripción para la tracción de las ruedas (recibe de SallyMovement)
-        self.velocity_subscription = self.create_subscription(
+        self.motor_subscription = self.create_subscription(
             Twist,
             "/sally/cmd_vel",
-            self.velocity_callback,
+            self.rotarion_callback(),
             10
         )
 
-        self.get_logger().info("Sally Physical Driver (Servos + Motors) started!")
+        self.get_logger().info(
+            "Sally servo driver started!"
+        )
 
-    def setup_motors(self):
-        GPIO.setwarnings(False)
+        #def get_parameters(self):
+        
+
+        # self.set_parameters([
+        #     Parameter('trig_ultra', Parameter.Type.INTEGER, 11),
+        #     Parameter('echo_ultra', Parameter.Type.INTEGER, 8),
+        #     Parameter('servo_chanel', Parameter.Type.INTEGER, 2),
+        #     Parameter('in1', Parameter.Type.INTEGER, 26),
+        #     Parameter('ena', Parameter.Type.INTEGER, 4),
+        #     Parameter('in2', Parameter.Type.INTEGER, 21),
+        #     Parameter('in4', Parameter.Type.INTEGER, 18),
+        #     Parameter('enb', Parameter.Type.INTEGER, 17),
+        #     Parameter('in3', Parameter.Type.INTEGER, 27),
+        #     ])
+    # end def
+
+
+    def rh_ultra(self):
         GPIO.setmode(GPIO.BCM)
 
-        GPIO.setup(self.motor_en, GPIO.OUT)
-        GPIO.setup(self.motor_in1, GPIO.OUT)
-        GPIO.setup(self.motor_in2, GPIO.OUT)
+        GPIO.setmode(self.trig_ultra, GPIO.OUT)
+        GPIO.setmode(self.echo_ultra, GPIO.IN)
 
-        self.pwm = GPIO.PWM(self.motor_en, 1000)
-        self.pwm.start(0)
+        #inicializar sensor
+        GPIO.output(self.trig_ultra, False)
+        time.sleep(0.2)
 
-    # CONTROL DE LOS SERVOS DE LA CABEZA
+        GPIO.output(self.trig_ultra, True)
+        time.sleep(0.00001)
+        GPIO.output(self.trig_ultra, False)
+
+        #Medir duracion del pulso
+        while GPIO.input(self.echo_ultra)==0:
+            pulse_start = time.time()
+
+        while GPIO.input(self.echo_ultra)==1:
+            pulse_end= time.time()
+
+        pulse_duration = pulse_start - pulse_end
+
+        self.rh_ultra_pub.publish(pulse_duration)
+
+    def rotarion_callback(self, velocity):
+        #inicializar los GPIO
+        GPIO.setmode(GPIO.BCM)
+
+        GPIO.setmode(self.in1, GPIO.OUT)
+        GPIO.setmode(self.ena, GPIO.OUT)
+        GPIO.setmode(self.in2, GPIO.OUT)
+
+        GPIO.setmode(self.in4, GPIO.OUT)
+        GPIO.setmode(self.enb, GPIO.OUT)
+        GPIO.setmode(self.in3, GPIO.OUT)
+
+        #Establecer los pwm
+        pwm_motor1 = GPIO.PWM(self.ena, 1000)
+        pwm_motor1.start(0)
+
+        pwm_motor2 = GPIO.PWM(self.enb, 1000)
+        pwm_motor2.start(0)
+
+        #Recibir intrucciones
+        self.pwm_motor1.ChangeDutyCycle(velocity.linear.x)
+        self.pwm_motor2.ChangeDutyCycle(velocity.linear.x)
+
+        if(velocity.angular.x>0):
+            GPIO.output(self.in1, True)
+            GPIO.output(self.in2, False)
+
+            GPIO.output(self.in4, False)
+            GPIO.output(self.in3, True)
+        elif(velocity.angular.x<0):
+            GPIO.output(self.in1, False)
+            GPIO.output(self.in2, True)
+
+            GPIO.output(self.in1, True)
+            GPIO.output(self.in2, False)
+        elif(velocity.angular.x):
+            GPIO.output(self.in1, True)
+            GPIO.output(self.in2, True)
+
+            GPIO.output(self.in1, True)
+            GPIO.output(self.in2, True)
+
+
     def angle_callback(self, message):
-        angle_1 = float(message.servo_1)
-        angle_2 = float(message.servo_2)
 
-        if not 0.0 <= angle_1 <= 180.0:
-            self.get_logger().warning(f"Invalid servo 1 angle: {angle_1}")
+        angle = float(message.servo1)
+
+        # VERFICA SI EL ANGULO ES VÁLIDO
+        if not 0.0 <= angle <= 180.0:
+            self.get_logger().warning(
+                f"Invalid angle received: {angle.servo1}"
+            )
             return
 
-        if not 0.0 <= angle_2 <= 180.0:
-            self.get_logger().warning(f"Invalid servo 2 angle: {angle_2}")
-            return
+        # MUEVE EL SERVO
+        self.servo.angle = angle
 
-        self.servo_1.angle = angle_1
-        self.servo_2.angle = angle_2
+        self.get_logger().info(
+            f"Servo moved to {angle} degrees"
+        )
 
-        self.get_logger().info(f"Servo 1: {angle_1} | Servo 2: {angle_2}")
-
-    # CONTROL DE VELOCIDAD DE LAS RUEDAS (RECIBE CMD_VEL)
-    def velocity_callback(self, message):
-        speed = message.linear.x
-
-        if speed == 0.0:
-            self.motor_detener()
-            return
-
-        # Calcular ciclo de trabajo 
-        duty_cycle = (abs(speed) / self.max_linear_speed) * self.max_duty_cycle
-        duty_cycle = min(duty_cycle, self.max_duty_cycle)
-
-        if speed > 0:
-            self.motor_adelante(duty_cycle)
-        elif speed < 0:
-            self.motor_atras(duty_cycle)
-
-    # MÉTODOS DE POTENCIA PARA EL PUENTE H
-    def motor_adelante(self, velocidad):
-        GPIO.output(self.motor_in1, GPIO.HIGH)
-        GPIO.output(self.motor_in2, GPIO.LOW)
-        self.pwm.ChangeDutyCycle(velocidad)
-
-    def motor_atras(self, velocidad):
-        GPIO.output(self.motor_in1, GPIO.LOW)
-        GPIO.output(self.motor_in2, GPIO.HIGH)
-        self.pwm.ChangeDutyCycle(velocidad)
-
-    def motor_detener(self):
-        self.pwm.ChangeDutyCycle(0)
-        GPIO.output(self.motor_in1, GPIO.LOW)
-        GPIO.output(self.motor_in2, GPIO.LOW)
-
-    # LIBERAR HARDWARE DE FORMA SEGURA AL APAGAR
     def destroy_node(self):
-        self.motor_detener()
-        self.pwm.stop()
-        GPIO.cleanup()
         self.pca.deinit()
         super().destroy_node()
 
 
+
 def main(args=None):
     rclpy.init(args=args)
-    node = SallyPhysicalDriver()
-
+    node = serial_bridge()
     try:
         rclpy.spin(node)
+
     except KeyboardInterrupt:
         pass
     finally:
         node.destroy_node()
         rclpy.shutdown()
 
-
 if __name__ == "__main__":
     main()
+
