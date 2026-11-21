@@ -18,7 +18,7 @@ class SerialUltra(Node):
         self.rh_ultra_sub = self.create_subscription(
             Float32, 
             '/sally/rh_dist', 
-            self.distancia(), 
+            self.distancia, 
             10
             )
             
@@ -26,13 +26,14 @@ class SerialUltra(Node):
 
     def distancia(self, pulse_duration):
 
-        duration = Float32()
-        duration = pulse_duration.data
-
         # Pasar velocidad del sonido a distancia -- m a cm (34300) y dividido en 2
-        distance = duration * 17150
+ 
 
-        self.ultra_pub.publish(distance)
+        pub_dist = Float32()
+        pub_dist .data= pulse_duration.data * 17150.0
+        self.get_logger().info(f"¡Se logró perros hptas! {pub_dist.data}")
+        
+        self.ultra_pub.publish(pub_dist)
 
 def main(args=None):
     rclpy.init(args=args)
