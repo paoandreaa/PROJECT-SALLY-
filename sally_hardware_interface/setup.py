@@ -28,7 +28,7 @@ setup(
     license='BSD-3-Clause',
     entry_points={
         'console_scripts': [
-            'sally_hardware = sally_hardware_interface.serial_bridge:main'
+            'serial_bridge = sally_hardware_interface.serial_bridge:main'
         ],
     },
 )

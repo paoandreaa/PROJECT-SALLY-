@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 
-from sally_msgs.msg import SallyServo
+from sally_msgs.msg import ServoHead
 from geometry_msgs.msg import Twist
 
 import RPi.GPIO as GPIO
@@ -42,7 +42,7 @@ class SallyPhysicalDriver(Node):
         # 3. SUSCRIPCIONES EN ROS 2
         # Suscripción para los movimientos de la cabeza
         self.servo_subscription = self.create_subscription(
-            SallyServo,
+            ServoHead,
             "/sally/servo_command",
             self.angle_callback,
             10
