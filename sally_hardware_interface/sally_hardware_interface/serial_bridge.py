@@ -15,6 +15,17 @@ class serial_bridge(Node):
     def __init__(self):
         super().__init__("sally_hardware")
 
+        
+        self.declare_parameter('trig_ultra', 11)
+        self.declare_parameter('echo_ultra', 8)
+        self.declare_parameter('servo_chanel', 2)
+        self.declare_parameter('in1', 26)
+        self.declare_parameter('ena', 4)
+        self.declare_parameter('in2', 21)
+        self.declare_parameter('in4', 18)
+        self.declare_parameter('enb', 17)
+        self.declare_parameter('in3', 27)
+
         # self.get_parameter()
 
         self.rh_ultra_pub = self.create_publisher(
@@ -29,7 +40,12 @@ class serial_bridge(Node):
         self.pca.frequency = 50
 
         # CONECTO EL SERVO AL CANAL
-        self.servo = adafruit_motor.servo.Servo(self.pca.channels[self.servo_chanel])
+        self.servo = adafruit_motor.servo.Servo(self.pca.channels[2])
+
+        self.motor_en = 4
+        self.motor_in1 = 26
+        self.motor_in2 = 21 
+
 
         # SE SUSCRIBE AL TOPIC
         self.servo_subscription = self.create_subscription(
@@ -51,27 +67,19 @@ class serial_bridge(Node):
         )
 
         #def get_parameters(self):
-        self.declare_parameter('trig_ultra', 11)
-        self.declare_parameter('echo_ultra', 8)
-        self.declare_parameter('servo_chanel', 2)
-        self.declare_parameter('in1', 26)
-        self.declare_parameter('ena', 4)
-        self.declare_parameter('in2', 21)
-        self.declare_parameter('in4', 18)
-        self.declare_parameter('enb', 17)
-        self.declare_parameter('in3', 27)
+        
 
-        self.set_parameters([
-            Parameter('trig_ultra', Parameter.Type.INTEGER, 11),
-            Parameter('echo_ultra', Parameter.Type.INTEGER, 8),
-            Parameter('servo_chanel', Parameter.Type.INTEGER, 2),
-            Parameter('in1', Parameter.Type.INTEGER, 26),
-            Parameter('ena', Parameter.Type.INTEGER, 4),
-            Parameter('in2', Parameter.Type.INTEGER, 21),
-            Parameter('in4', Parameter.Type.INTEGER, 18),
-            Parameter('enb', Parameter.Type.INTEGER, 17),
-            Parameter('in3', Parameter.Type.INTEGER, 27),
-            ])
+        # self.set_parameters([
+        #     Parameter('trig_ultra', Parameter.Type.INTEGER, 11),
+        #     Parameter('echo_ultra', Parameter.Type.INTEGER, 8),
+        #     Parameter('servo_chanel', Parameter.Type.INTEGER, 2),
+        #     Parameter('in1', Parameter.Type.INTEGER, 26),
+        #     Parameter('ena', Parameter.Type.INTEGER, 4),
+        #     Parameter('in2', Parameter.Type.INTEGER, 21),
+        #     Parameter('in4', Parameter.Type.INTEGER, 18),
+        #     Parameter('enb', Parameter.Type.INTEGER, 17),
+        #     Parameter('in3', Parameter.Type.INTEGER, 27),
+        #     ])
     # end def
 
 
