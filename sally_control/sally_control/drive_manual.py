@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-import sys
-import termios
-import tty
+import time
 import curses
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Twist
 
 class manual_driving(Node):
 
@@ -15,13 +13,31 @@ class manual_driving(Node):
         super().__init__("drive_manual")
 
         self.manual_directions = self.create_publisher(
-            Float32,
+            Twist,
             "/sally/cmd_movement",
             10
         )
 
+        self.speed = 0.2 
+
+        self.timer = self.create_timer(0.1, self.read_key)
+
     def read_key(self):
         key = self.getch()
+        velocity = Twist()
+
+        if(key == curses.KEY_UP):
+            velocity.linear.x = self.speed
+            velocity.angular.x = 1.0
+            self.velocity_publisher.publish(velocity)
+        elif(key == curses.KEY_DOWN):
+            velocity.linear.x = self.speed
+            velocity.angular.x = -1.0
+            self.velocity_publisher.publish(velocity)
+        else:
+            velocity.linear.x = self.speed
+            velocity.angular.x = 0
+            self.velocity_publisher.publish(velocity)
 
 
 def main(args=None):

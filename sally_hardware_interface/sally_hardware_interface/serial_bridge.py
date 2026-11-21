@@ -52,6 +52,8 @@ class serial_bridge(Node):
 
         # CONECTO EL SERVO AL CANAL
         self.servo = adafruit_motor.servo.Servo(self.pca.channels[self.servo_chanel])
+        self.servo1 = adafruit_motor.servo.Servo(self.pca.channels[self.servo1_chanel])
+        self.servo0 = adafruit_motor.servo.Servo(self.pca.channels[self.servo0_chanel])
 
         # SE SUSCRIBE AL TOPIC
         self.servo_subscription = self.create_subscription(
@@ -78,6 +80,8 @@ class serial_bridge(Node):
         self.declare_parameter('trig_ultra', 11)
         self.declare_parameter('echo_ultra', 8)
         self.declare_parameter('servo_chanel', 2)
+        self.declare_parameter('servo1_chanel', 1)
+        self.declare_parameter('servo0_chanel', 0)
         self.declare_parameter('in1', 26)
         self.declare_parameter('ena', 4)
         self.declare_parameter('in2', 21)
@@ -88,6 +92,8 @@ class serial_bridge(Node):
         self.trig_ultra = self.get_parameter('trig_ultra').value
         self.echo_ultra = self.get_parameter('echo_ultra').value
         self.servo_chanel = self.get_parameter('servo_chanel').value
+        self.servo1_chanel = self.get_parameter('servo1_chanel').value
+        self.servo0_chanel = self.get_parameter('servo0_chanel').value
         self.in1 = self.get_parameter('in1').value
         self.ena = self.get_parameter('ena').value
         self.in2 = self.get_parameter('in2').value

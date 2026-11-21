@@ -7,7 +7,7 @@ import tty
 import rclpy
 from rclpy.node import Node
 
-from sally_msgs.msg import SallyServo
+from sally_msgs.msg import ServoHead
 
 
 class SallyTeleop(Node):
@@ -16,7 +16,7 @@ class SallyTeleop(Node):
         super().__init__("sally_teleop")
 
         self.angle_publisher = self.create_publisher(
-            SallyServo,
+            ServoHead,
             "/sally/servo_command",
             10
         )
@@ -60,10 +60,10 @@ class SallyTeleop(Node):
         self.angle_2 = max(0.0, min(180.0, self.angle_2))
 
         # Crear mensaje
-        message = SallyServo()
+        message = ServoHead()
 
-        message.servo_1 = self.angle_1
-        message.servo_2 = self.angle_2
+        ServoHead.servo1 = self.angle_1
+        ServoHead.servo2 = self.angle_2
 
         # Publicar ambos ángulos
         self.angle_publisher.publish(message)

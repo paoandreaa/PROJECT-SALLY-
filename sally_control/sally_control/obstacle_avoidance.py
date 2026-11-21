@@ -5,7 +5,7 @@ import time
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, String 
-from sally_msgs.msg import ServoHead
+from sally_msgs.msg import ServoHead, CarMovement
 
 
 class SallyExploration(Node):
@@ -20,7 +20,7 @@ class SallyExploration(Node):
         )
 
         self.decision_publisher = self.create_publisher(
-            String,
+            CarMovement,
             "/sally/decision",
             10
         )
@@ -52,6 +52,7 @@ class SallyExploration(Node):
     def exploration_callback(self):
 
         now = time.monotonic()
+        decision = CarMovement()
 
         # Si todavía estamos esperando que se mueva el servo
         if self.waiting:
@@ -67,8 +68,6 @@ class SallyExploration(Node):
             self.distance = None
             self.waiting = False
 
-            decision = String()
-
             # Comprobar si hay un obstáculo
             if distance > 0 and distance < 15.0:
 
@@ -76,12 +75,12 @@ class SallyExploration(Node):
                 self.blocked_until[self.index] = now + 3.0
 
 
-                decision.data = "BACKWARD"
+                decision.rute = "BACKWARD"
 
                 self.get_logger().info("Obstacle detected. Avoiding direction.")
 
             else: 
-                decision.data = "FORWARD"
+                decision.rute = "FORWARD"
 
                 self.get_logger().info("Path clear!")
 
@@ -93,8 +92,9 @@ class SallyExploration(Node):
 
             if now >= self.blocked_until[self.index]:
 
-                angle = ServoHead
+                angle = ServoHead()
                 angle.servo1 = self.directions[self.index]
+                decision.direction =  angle.servo1
 
                 self.head_publisher.publish(angle)
 

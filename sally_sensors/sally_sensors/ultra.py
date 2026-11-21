@@ -27,7 +27,6 @@ class SerialUltra(Node):
     def distancia(self, pulse_duration):
 
         # Pasar velocidad del sonido a distancia -- m a cm (34300) y dividido en 2
-
         pub_dist = Float32()
         pub_dist .data= pulse_duration.data * 17150.0
         self.get_logger().info(f"¡Se logró perros hptas! {pub_dist.data}")
