@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -43,6 +41,7 @@ class SallyMovement(Node):
 
         velocity = Twist()
         velocity.linear.x = self.speed
+        velocity.angular.x = 1.0
         self.velocity_publisher.publish(velocity)
         self.current_movement = "FORWARD"
         
@@ -52,6 +51,7 @@ class SallyMovement(Node):
 
         velocity = Twist()
         velocity.linear.x = -self.speed
+        velocity.angular.x = -1.0
         self.velocity_publisher.publish(velocity)
         self.current_movement = "BACKWARD"
 
@@ -61,6 +61,7 @@ class SallyMovement(Node):
 
         velocity = Twist()
         velocity.linear.x = 0.0
+        velocity.angular.x = 0.0
         self.velocity_publisher.publish(velocity)
         self.current_movement = "STOP"
 

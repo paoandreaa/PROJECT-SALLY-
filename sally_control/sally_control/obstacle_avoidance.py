@@ -5,6 +5,7 @@ import time
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, String 
+from sally_msgs.msg import ServoHead
 
 
 class SallyExploration(Node):
@@ -13,7 +14,7 @@ class SallyExploration(Node):
         super().__init__("sally_exploration")
 
         self.head_publisher = self.create_publisher(
-            Float32, 
+            ServoHead, 
             "/sally/servo_command", 
             10
         )
@@ -26,7 +27,7 @@ class SallyExploration(Node):
 
         self.distance_subscriber = self.create_subscription(
             Float32,
-            "dist",
+            "/sally/dist",
             self.distance_callback,
             10
         )
@@ -92,8 +93,8 @@ class SallyExploration(Node):
 
             if now >= self.blocked_until[self.index]:
 
-                angle = Float32()
-                angle.data = self.directions[self.index]
+                angle = ServoHead
+                angle.servo1 = self.directions[self.index]
 
                 self.head_publisher.publish(angle)
 

@@ -12,6 +12,11 @@
     <!-- Build tool dependencies for ament package -->
     <buildtool_depend>ament_python</buildtool_depend>
 
+    <!-- Hardware Python dependencies -->
+    <exec_depend>python3-adafruit-blinka-pip</exec_depend>
+    <exec_depend>python3-adafruit-circuitpython-motor-pip</exec_depend>
+    <exec_depend>python3-rpi.gpio</exec_depend>
+
     <!-- Test dependencies -->
     <test_depend>ament_cmake_gtest</test_depend>
     <test_depend>ament_lint_auto</test_depend>

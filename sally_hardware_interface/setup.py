@@ -27,6 +27,8 @@ setup(
     description='SALLY ROS 2 package',
     license='BSD-3-Clause',
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'sally_hardware = sally_hardware_interface.serial_bridge:main'
+        ],
     },
 )

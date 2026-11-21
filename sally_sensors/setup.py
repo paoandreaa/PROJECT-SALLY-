@@ -27,6 +27,8 @@ setup(
     description='SALLY ROS 2 package',
     license='BSD-3-Clause',
     entry_points={
-        'console_scripts': ['ultra = sally_sensors.ultra:main'],
+        'console_scripts': [
+            'ultra = sally_sensors.ultra:main'
+        ],
     },
 )
