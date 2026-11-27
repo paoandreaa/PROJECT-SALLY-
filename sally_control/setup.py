@@ -28,8 +28,10 @@ setup(
     license='BSD-3-Clause',
     entry_points={
         'console_scripts': [
-            'drive_controller = sally_control.drive_controller:main',
-            'obstacle_avoidance = sally_control.obstacle_avoidance:main',
+            'sally_movement = sally_control.drive_controller:main',
+            'drive_manual = sally_control.drive_manual:main',
+            'sally_teleop = sally_control.head_controller:main',
+            'sally_exploration = sally_control.obstacle_avoidance:main',
         ],
     },
 )
