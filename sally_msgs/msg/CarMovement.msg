@@ -1,2 +1,3 @@
 string rute
-float32 direction
+string direction
+float32 speed

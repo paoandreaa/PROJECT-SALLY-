@@ -2,25 +2,26 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
-from geometry_msgs.msg import Twist 
+from sally_msgs.msg import CarMovement
+
 
 class SallyMovement(Node):
 
     def __init__(self):
         super().__init__("sally_movement")
 
+        self.velocity = CarMovement()
         self.current_movement = "STOP"
         self.speed = 0.2 
 
         self.velocity_publisher = self.create_publisher(
-            Twist,
+            CarMovement,
             "/sally/cmd_vel",
             10
         )
 
         self.decision_subscription = self.create_subscription(
-            String,
+            CarMovement,
             "/sally/decision",
             self.decision_callback,
             10
@@ -28,8 +29,8 @@ class SallyMovement(Node):
 
     def decision_callback(self, message):
 
-        decision = String()
-        decision = message.data
+        decision = message.rute
+        self.velocity.direction = message.direction
 
         if decision == "FORWARD":
             self.move_forward()
@@ -39,32 +40,31 @@ class SallyMovement(Node):
         else:
             self.stop()
 
+
     def move_forward(self):
 
-        velocity = Twist()
-        velocity.linear.x = self.speed
-        velocity.angular.x = 1.0
-        self.velocity_publisher.publish(velocity)
+        self.velocity.speed = self.speed
+        self.velocity.rute = "FORWARD"
+
+        self.velocity_publisher.publish(self.velocity)
         self.current_movement = "FORWARD"
         
         self.get_logger().info("Sally moving forward!")
 
     def move_backward(self):
 
-        velocity = Twist()
-        velocity.linear.x = -self.speed
-        velocity.angular.x = -1.0
-        self.velocity_publisher.publish(velocity)
+        self.velocity.speed = self.speed
+        self.velocity.rute = "BACKWARD"
+        self.velocity_publisher.publish(self.velocity)
         self.current_movement = "BACKWARD"
 
         self.get_logger().info("Sally moving backward!")
 
     def stop(self):
 
-        velocity = Twist()
-        velocity.linear.x = 0.0
-        velocity.angular.x = 0.0
-        self.velocity_publisher.publish(velocity)
+        self.velocity.speed = 0
+        self.velocity.rute = "STOP"
+        self.velocity_publisher.publish(self.velocity)
         self.current_movement = "STOP"
 
         self.get_logger().info("Sally stopped!") 

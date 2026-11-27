@@ -94,7 +94,10 @@ class SallyExploration(Node):
 
                 angle = ServoHead()
                 angle.servo1 = self.directions[self.index]
-                decision.direction =  angle.servo1
+                if(angle.servo1<90):
+                    decision.direction = "RIGHT"
+                elif(angle.servo1>90):
+                    decision.direction = "LEFT"
 
                 self.head_publisher.publish(angle)
 

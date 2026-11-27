@@ -6,7 +6,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float32
 from geometry_msgs.msg import Twist
 from rclpy.parameter import Parameter
-from sally_msgs.msg import ServoHead
+from sally_msgs.msg import ServoHead, CarMovement
 import RPi.GPIO as GPIO
 import time
 
@@ -17,6 +17,18 @@ import adafruit_motor.servo
 class serial_bridge(Node):
     def __init__(self):
         super().__init__("sally_hardware")
+
+        self.declare_parameter('trig_ultra', 11)
+        self.declare_parameter('echo_ultra', 8)
+        self.declare_parameter('servo2_chanel', 2)
+        self.declare_parameter('servo1_chanel', 1)
+        self.declare_parameter('servo0_chanel', 0)
+        self.declare_parameter('in1', 26)
+        self.declare_parameter('ena', 4)
+        self.declare_parameter('in2', 21)
+        self.declare_parameter('in4', 18)
+        self.declare_parameter('enb', 17)
+        self.declare_parameter('in3', 27)
 
         self.thing_parm()
 
@@ -51,7 +63,7 @@ class serial_bridge(Node):
         self.pca.frequency = 50
 
         # CONECTO EL SERVO AL CANAL
-        self.servo = adafruit_motor.servo.Servo(self.pca.channels[self.servo_chanel])
+        self.servo2 = adafruit_motor.servo.Servo(self.pca.channels[self.servo2_chanel])
         self.servo1 = adafruit_motor.servo.Servo(self.pca.channels[self.servo1_chanel])
         self.servo0 = adafruit_motor.servo.Servo(self.pca.channels[self.servo0_chanel])
 
@@ -64,7 +76,7 @@ class serial_bridge(Node):
         )
 
         self.motor_subscription = self.create_subscription(
-            Twist,
+            CarMovement,
             "/sally/cmd_vel",
             self.rotarion_callback,
             10
@@ -77,21 +89,10 @@ class serial_bridge(Node):
         self.timer = self.create_timer(0.1, self.rh_ultra)
 
     def thing_parm(self):
-        self.declare_parameter('trig_ultra', 11)
-        self.declare_parameter('echo_ultra', 8)
-        self.declare_parameter('servo_chanel', 2)
-        self.declare_parameter('servo1_chanel', 1)
-        self.declare_parameter('servo0_chanel', 0)
-        self.declare_parameter('in1', 26)
-        self.declare_parameter('ena', 4)
-        self.declare_parameter('in2', 21)
-        self.declare_parameter('in4', 18)
-        self.declare_parameter('enb', 17)
-        self.declare_parameter('in3', 27)
 
         self.trig_ultra = self.get_parameter('trig_ultra').value
         self.echo_ultra = self.get_parameter('echo_ultra').value
-        self.servo_chanel = self.get_parameter('servo_chanel').value
+        self.servo2_chanel = self.get_parameter('servo2_chanel').value
         self.servo1_chanel = self.get_parameter('servo1_chanel').value
         self.servo0_chanel = self.get_parameter('servo0_chanel').value
         self.in1 = self.get_parameter('in1').value
@@ -109,7 +110,7 @@ class serial_bridge(Node):
 
         #inicializar sensor
         GPIO.output(self.trig_ultra, False)
-        time.sleep(0.2)
+        time.sleep(0.1)
 
         GPIO.output(self.trig_ultra, True)
         time.sleep(0.00001)
@@ -129,11 +130,31 @@ class serial_bridge(Node):
 
     def rotarion_callback(self, velocity):
 
-        speed = abs(velocity.linear.x) * 100
+        speed = max(0.0, min(abs(velocity.speed) * 100, 100.0))
+        if(velocity.direction=="RIGHT"):
+            angle0 = 175.0
+        elif(velocity.direction=="LEFT"):
+            angle0 = 5.0
+        elif(velocity.direction=="STRAIGHT"):
+            angle0 = 90.0
+        else:
+            angle0 = 90.0
 
-        #Recibir intrucciones
+        if not 0.0 <= angle0 <= 180.0:
+            self.get_logger().warning(
+                f"Invalid angle received: {angle0}"
+            )
+            return
 
-        if(velocity.angular.x>0):
+        # MUEVE EL SERVO
+        self.servo0.angle = angle0
+
+        self.get_logger().info(
+            f"Servo moved to {angle0} degrees"
+        )
+
+        #Mueve motores DC
+        if(velocity.rute=="FORWARD"):
             GPIO.output(self.in1, True)
             GPIO.output(self.in2, False)
 
@@ -142,7 +163,7 @@ class serial_bridge(Node):
 
             self.pwm_motor1.ChangeDutyCycle(speed)
             self.pwm_motor2.ChangeDutyCycle(speed)
-        elif(velocity.angular.x<0):
+        elif(velocity.rute=="BACKWARD"):
             GPIO.output(self.in1, False)
             GPIO.output(self.in2, True)
 
@@ -151,7 +172,7 @@ class serial_bridge(Node):
 
             self.pwm_motor1.ChangeDutyCycle(speed)
             self.pwm_motor2.ChangeDutyCycle(speed)
-        elif(velocity.angular.x==0):
+        elif(velocity.rute=="STOP"):
             GPIO.output(self.in1, True)
             GPIO.output(self.in2, True)
 
@@ -164,21 +185,35 @@ class serial_bridge(Node):
 
     def angle_callback(self, message):
 
-        angle = float(message.servo1)
+        angle2 = float(message.servo1)
+        angle1 = float(message.servo2)
 
         # VERFICA SI EL ANGULO ES VÁLIDO
-        if not 0.0 <= angle <= 180.0:
+        if not 0.0 <= angle2 <= 180.0:
             self.get_logger().warning(
-                f"Invalid angle received: {angle}"
+                f"Invalid angle received: {angle2}"
             )
             return
 
+        if not 0.0 <= angle1 <= 180.0:
+                    self.get_logger().warning(
+                        f"Invalid angle received: {angle1}"
+                    )
+                    return
+
         # MUEVE EL SERVO
-        self.servo.angle = angle
+        self.servo2.angle = angle2
 
         self.get_logger().info(
-            f"Servo moved to {angle} degrees"
+            f"Servo moved to {angle2} degrees"
         )
+
+        self.servo1.angle = angle1
+
+        self.get_logger().info(
+            f"Servo moved to {angle1} degrees"
+        )
+
 
     def destroy_node(self):
         self.pwm_motor1.stop()
